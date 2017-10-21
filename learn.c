@@ -56,19 +56,30 @@ int main(int argc, char **argv)
     fscanf(learnFile, "\n", NULL);
   }
   fclose(learnFile);
-  double **finalMatrix = NULL;
-  finalMatrix = allocateMatrix(numHouses, 1);
+  double **finalMatrix = allocateMatrix(numHouses, 1);
   //Series of steps to get to the final answer
-  double **xTranspose = transpose(xMatrix, numRows, numCols);
-  double **toInvert = NULL;
+  double **xTranspose = allocateMatrix(numRows, numCols);
+  xTranspose = transpose(xMatrix, numRows, numCols);
+  double **toInvert = allocateMatrix(numCols, numCols);
   toInvert = multiply(xTranspose, xMatrix, numCols, numRows, numRows, numCols);
-  double **inverted = invert(toInvert, numCols);
+  for(int i =0; i <numCols ; i++)
+  {
+    for(int j =0; j < numCols; j++)
+    {
+      printf("%lf ", toInvert[i][j]);
+    }
+    printf("\n");
+  }
+  double **inverted = allocateMatrix(numCols, numCols);
+  inverted = invert(toInvert, numCols);
   freeMatrixMem(toInvert, numCols);
-  double **invertedTimesXTranspose = multiply(inverted, xTranspose, numCols,numCols,numCols, numRows);
+  double **invertedTimesXTranspose = allocateMatrix(numCols, numRows);
+  invertedTimesXTranspose = multiply(inverted, xTranspose, numCols,numCols,numCols, numRows);
   freeMatrixMem(inverted, numCols);
   freeMatrixMem(xTranspose, numCols);
   freeMatrixMem(xMatrix, numRows);
-  double **weightMatrix = multiply(invertedTimesXTranspose, yMatrix, numCols, numRows, numRows, 1);
+  double **weightMatrix = allocateMatrix(numCols, 1);
+  weightMatrix = multiply(invertedTimesXTranspose, yMatrix, numCols, numRows, numRows, 1);
   freeMatrixMem(invertedTimesXTranspose, numCols);
   finalMatrix = multiply(testingXMatrix, weightMatrix,numHouses,numCols,numCols,1);
   freeMatrixMem(testingXMatrix, numHouses);
@@ -149,16 +160,16 @@ void freeMatrixMem(double **matrix, int rows)
     }
     return identityMatrix;
   }
- double **subtractRow(double **matrix, int row, int subtractor, int size, double multiplier)
- {
-   double **modifiedMatrix = allocateMatrix(size, size);
-   modifiedMatrix = matrix;
-   for(int curCol = 0; curCol < size; curCol++)
-   {
-     modifiedMatrix[row][curCol] = matrix[row][curCol] - (multiplier * (matrix[subtractor][curCol]));
-   }
-   return modifiedMatrix;
- }
+  double **subtractRow(double **matrix, int row, int subtractor, int size, double multiplier)
+  {
+    double **modifiedMatrix = allocateMatrix(size, size);
+    modifiedMatrix = matrix;
+    for(int curCol = 0; curCol < size; curCol++)
+    {
+      modifiedMatrix[row][curCol] = matrix[row][curCol] - (multiplier * (matrix[subtractor][curCol]));
+    }
+    return modifiedMatrix;
+  }
  double **multiply(double **matrixA, double **matrixB, int rowsA, int rowsB, int colsA, int colsB)
 {
     double **newMatrix = allocateMatrix(rowsA, colsB);
