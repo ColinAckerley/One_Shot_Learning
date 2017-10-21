@@ -73,7 +73,7 @@ int main(int argc, char **argv)
   finalMatrix = multiply(testingXMatrix, weightMatrix,numHouses,numCols,numCols,1);
   freeMatrixMem(testingXMatrix, numHouses);
   freeMatrixMem(weightMatrix, numCols);
-  //Print the result matrix
+  printResults(finalMatrix,numHouses);
   freeMatrixMem(finalMatrix, numHouses);
   freeMatrixMem(yMatrix, numRows);
 }
@@ -95,13 +95,13 @@ void freeMatrixMem(double **matrix, int rows)
     free(matrix);
  }
  double **invert(double **matrix, int size)
-{
+ {
     double **identityMatrix = allocateMatrix(size, size);
     double **modifiedMatrix = allocateMatrix(size,size);
     identityMatrix = createIdentityMatrix(size);
     modifiedMatrix = matrix;
     double ratio = 0;
-    for(int curCol = 0; curCol < size; curCol++)
+    for(int curCol = 0; curCol < size; curCol++) //Bring to row echelon form
     {
       for(int curRow = curCol +1; curRow < size; curRow++)
       {
@@ -118,8 +118,37 @@ void freeMatrixMem(double **matrix, int rows)
         }
       }
     }
+    for(int curRow = 0; curRow < size-1; curRow++) //Change into reduced row echelon form
+    {
+      int tmp = curRow+1;
+      for(int curCol = curRow + 1; curCol < size; curCol++)
+      {
+        ratio = modifiedMatrix[curRow][curCol]/modifiedMatrix[tmp][curCol];
+        modifiedMatrix = subtractRow(modifiedMatrix, curRow, tmp, size, ratio);
+        identityMatrix = subtractRow(identityMatrix, curRow, tmp, size, ratio);
+        tmp++;
+      }
+    }
+    for(int curRow = 0; curRow < size; curRow++)
+    {
+      for(int curCol = 0; curCol < size; curCol++)
+      {
+        if(curRow == curCol)
+        {
+          if(modifiedMatrix[curRow][curCol] != 1)
+          {
+            double ratio = 1/(modifiedMatrix[curRow][curCol]);
+            for(int i = 0; i < size; i++)
+            {
+              modifiedMatrix[curRow][i] = ratio * (modifiedMatrix[curRow][i]);
+              identityMatrix[curRow][i] = ratio * (identityMatrix[curRow][i]);
+            }
+          }
+        }
+      }
+    }
     return identityMatrix;
-}
+  }
  double **subtractRow(double **matrix, int row, int subtractor, int size, double multiplier)
  {
    double **modifiedMatrix = allocateMatrix(size, size);
@@ -176,6 +205,6 @@ void printResults(double** finalPriceMatrix, int numRows)
 {
   for(int i = 0; i < numRows; i++)
   {
-    printf("%lf", finalPriceMatrix[i][0]);
+    printf("%0.0lf\n", finalPriceMatrix[i][0]);
   }
 }
