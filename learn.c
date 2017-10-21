@@ -94,22 +94,32 @@ void freeMatrixMem(double **matrix, int rows)
     }
     free(matrix);
  }
-double **invert(double **matrix, int size)
- {
-   double **newMatrix = allocateMatrix(size, size);
-   double **identityMatrix = createIdentityMatrix(size);
-   double **invertedMatrix = allocateMatrix(size, size);
-   invertedMatrix = identityMatrix;
-   newMatrix = matrix;
-   for(int curCol = 0; curCol < size; curCol++)
-   {
-     for(int curRow = curCol+1; curRow < size; curRow++)
-     {
-
-     }
-   }
-   return newMatrix;
- }
+ double **invert(double **matrix, int size)
+{
+    double **identityMatrix = allocateMatrix(size, size);
+    double **modifiedMatrix = allocateMatrix(size,size);
+    identityMatrix = createIdentityMatrix(size);
+    modifiedMatrix = matrix;
+    double ratio = 0;
+    for(int curCol = 0; curCol < size; curCol++)
+    {
+      for(int curRow = curCol +1; curRow < size; curRow++)
+      {
+        if(matrix[curRow][curCol] != 0)
+        {
+          int tmp = curRow - 1;
+          while(modifiedMatrix[tmp][curCol] == 0)
+          {
+            tmp--;
+          }
+          ratio = modifiedMatrix[curRow][curCol]/modifiedMatrix[tmp][curCol];
+          modifiedMatrix = subtractRow(modifiedMatrix,curRow, tmp, size, ratio);
+          identityMatrix = subtractRow(identityMatrix,curRow, tmp, size, ratio);
+        }
+      }
+    }
+    return identityMatrix;
+}
  double **subtractRow(double **matrix, int row, int subtractor, int size, double multiplier)
  {
    double **modifiedMatrix = allocateMatrix(size, size);
