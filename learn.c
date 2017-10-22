@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "learnHeader.h"
+#include "learn.h"
 int main(int argc, char **argv)
 {
   int numRows = 0;
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
       fscanf(learnFile, "%lf,", &xMatrix[i][j]);
     }
     fscanf(learnFile, "%lf,", &yMatrix[i][0]);
-    fscanf(learnFile, "\n", NULL);
+    fscanf(learnFile, "\n");
   }
   fclose(learnFile);
   filename = argv[2];
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     {
       fscanf(learnFile, "%lf,", &testingXMatrix[i][j]);
     }
-    fscanf(learnFile, "\n", NULL);
+    fscanf(learnFile, "\n");
   }
   fclose(learnFile);
   double **finalMatrix = allocateMatrix(numHouses, 1);
@@ -72,9 +72,9 @@ int main(int argc, char **argv)
   finalMatrix = multiply(testingXMatrix, weightMatrix,numHouses,numCols,numCols,1);
   freeMatrixMem(testingXMatrix, numHouses);
   freeMatrixMem(weightMatrix, numCols);
+  freeMatrixMem(yMatrix, numRows);
   printResults(finalMatrix,numHouses);
   freeMatrixMem(finalMatrix, numHouses);
-  freeMatrixMem(yMatrix, numRows);
 }
 double **allocateMatrix(int rows, int cols)
 {
