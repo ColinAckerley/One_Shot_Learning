@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "learnHeader.h"
 int main(int argc, char **argv)
 {
@@ -14,7 +15,7 @@ int main(int argc, char **argv)
     printf("error\n");
     exit(0);
   }
-  fscanf(learnFile, "%d\n", &numCols);
+  fscanf(learnFile, "%d\n", &numCols); //Get the rows & columns in the input
   fscanf(learnFile, "%d\n", &numRows);
   numCols++;
   double **xMatrix = allocateMatrix(numRows, numCols);
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
   {
     testingXMatrix[i][0] = 1;
   }
-  for(int i = 0; i < numHouses; i++) //Create the X Matrix used fofr testing
+  for(int i = 0; i < numHouses; i++) //Create the X Matrix used for testing
   {
     for(int j = 1; j < numCols; j++)
     {
@@ -58,28 +59,15 @@ int main(int argc, char **argv)
   fclose(learnFile);
   double **finalMatrix = allocateMatrix(numHouses, 1);
   //Series of steps to get to the final answer
-  double **xTranspose = allocateMatrix(numRows, numCols);
-  xTranspose = transpose(xMatrix, numRows, numCols);
-  double **toInvert = allocateMatrix(numCols, numCols);
-  toInvert = multiply(xTranspose, xMatrix, numCols, numRows, numRows, numCols);
-  for(int i =0; i <numCols ; i++)
-  {
-    for(int j =0; j < numCols; j++)
-    {
-      printf("%lf ", toInvert[i][j]);
-    }
-    printf("\n");
-  }
-  double **inverted = allocateMatrix(numCols, numCols);
-  inverted = invert(toInvert, numCols);
+  double **xTranspose = transpose(xMatrix, numRows, numCols);
+  double **toInvert = multiply(xTranspose, xMatrix, numCols, numRows, numRows, numCols);
+  double **inverted = invert(toInvert, numCols);
   freeMatrixMem(toInvert, numCols);
-  double **invertedTimesXTranspose = allocateMatrix(numCols, numRows);
-  invertedTimesXTranspose = multiply(inverted, xTranspose, numCols,numCols,numCols, numRows);
+  double **invertedTimesXTranspose = multiply(inverted, xTranspose, numCols,numCols,numCols, numRows);
   freeMatrixMem(inverted, numCols);
   freeMatrixMem(xTranspose, numCols);
   freeMatrixMem(xMatrix, numRows);
-  double **weightMatrix = allocateMatrix(numCols, 1);
-  weightMatrix = multiply(invertedTimesXTranspose, yMatrix, numCols, numRows, numRows, 1);
+  double **weightMatrix = multiply(invertedTimesXTranspose, yMatrix, numCols, numRows, numRows, 1);
   freeMatrixMem(invertedTimesXTranspose, numCols);
   finalMatrix = multiply(testingXMatrix, weightMatrix,numHouses,numCols,numCols,1);
   freeMatrixMem(testingXMatrix, numHouses);
@@ -105,21 +93,19 @@ void freeMatrixMem(double **matrix, int rows)
     }
     free(matrix);
  }
- double **invert(double **matrix, int size)
+double **invert(double **matrix, int size)
  {
-    double **identityMatrix = allocateMatrix(size, size);
-    double **modifiedMatrix = allocateMatrix(size,size);
-    identityMatrix = createIdentityMatrix(size);
-    modifiedMatrix = matrix;
+    double **identityMatrix = createIdentityMatrix(size);
+    double **modifiedMatrix = matrix;
     double ratio = 0;
     for(int curCol = 0; curCol < size; curCol++) //Bring to row echelon form
     {
       for(int curRow = curCol +1; curRow < size; curRow++)
       {
-        if(matrix[curRow][curCol] != 0)
+        if(fabs(modifiedMatrix[curRow][curCol]) > 10e-7)
         {
           int tmp = curRow - 1;
-          while(modifiedMatrix[tmp][curCol] == 0)
+          while(fabs(modifiedMatrix[tmp][curCol]) < 10e-7)
           {
             tmp--;
           }
@@ -148,7 +134,7 @@ void freeMatrixMem(double **matrix, int rows)
         {
           if(modifiedMatrix[curRow][curCol] != 1)
           {
-            double ratio = 1/(modifiedMatrix[curRow][curCol]);
+            ratio = 1/(modifiedMatrix[curRow][curCol]);
             for(int i = 0; i < size; i++)
             {
               modifiedMatrix[curRow][i] = ratio * (modifiedMatrix[curRow][i]);
@@ -177,6 +163,7 @@ void freeMatrixMem(double **matrix, int rows)
     {
 		for(int j = 0; j < colsB; j++)
 		{
+      newMatrix[i][j] = 0;
 			for(int k=0; k<colsA; k++)
 			{
 				newMatrix[i][j] += matrixA[i][k] * matrixB[k][j];
